@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-@RestController(value = "/virements")
+@RestController
+@RequestMapping("/api")
 class VirementController {
 
     public static final int MONTANT_MAXIMAL = 10000;
@@ -29,17 +30,17 @@ class VirementController {
     Logger LOGGER = LoggerFactory.getLogger(VirementController.class);
 
     @Autowired
-    private CompteRepository rep1;
+    private CompteRepository compteRepository;
     @Autowired
-    private VirementRepository re2;
+    private VirementRepository virementRepository;
     @Autowired
-    private AutiService monservice;
+    private AutiService autiService;
     @Autowired
-    private UtilisateurRepository re3;
+    private UtilisateurRepository utilisateurRepository;
 
-    @GetMapping("lister_virements")
+    @GetMapping("/virements")
     List<Virement> loadAll() {
-        List<Virement> all = re2.findAll();
+        List<Virement> all = virementRepository.findAll();
 
         if (CollectionUtils.isEmpty(all)) {
             return null;
@@ -48,9 +49,9 @@ class VirementController {
         }
     }
 
-    @GetMapping("lister_comptes")
+    @GetMapping("/comptes")
     List<Compte> loadAllCompte() {
-        List<Compte> all = rep1.findAll();
+        List<Compte> all = compteRepository.findAll();
 
         if (CollectionUtils.isEmpty(all)) {
             return null;
@@ -59,9 +60,9 @@ class VirementController {
         }
     }
 
-    @GetMapping("lister_utilisateurs")
+    @GetMapping("/utilisateurs")
     List<Utilisateur> loadAllUtilisateur() {
-        List<Utilisateur> all = re3.findAll();
+        List<Utilisateur> all = utilisateurRepository.findAll();
 
         if (CollectionUtils.isEmpty(all)) {
             return null;
@@ -74,8 +75,8 @@ class VirementController {
     @ResponseStatus(HttpStatus.CREATED)
     public void createTransaction(@RequestBody VirementDto virementDto)
             throws SoldeDisponibleInsuffisantException, CompteNonExistantException, TransactionException {
-        Compte c1 = rep1.findByNrCompte(virementDto.getNrCompteEmetteur());
-        Compte f12 = rep1
+        Compte c1 = compteRepository.findByNrCompte(virementDto.getNrCompteEmetteur());
+        Compte f12 = compteRepository
                 .findByNrCompte(virementDto.getNrCompteBeneficiaire());
 
         if (c1 == null) {
@@ -116,11 +117,11 @@ class VirementController {
         }
 
         c1.setSolde(c1.getSolde().subtract(virementDto.getMontantVirement()));
-        rep1.save(c1);
+        compteRepository.save(c1);
 
         f12
                 .setSolde(new BigDecimal(f12.getSolde().intValue() + virementDto.getMontantVirement().intValue()));
-        rep1.save(f12);
+        compteRepository.save(f12);
 
         Virement virement = new Virement();
         virement.setDateExecution(virementDto.getDate());
@@ -128,14 +129,15 @@ class VirementController {
         virement.setCompteEmetteur(c1);
         virement.setMontantVirement(virementDto.getMontantVirement());
 
-        re2.save(virement);
+        virementRepository.save(virement);
 
-        monservice.auditVirement("Virement depuis " + virementDto.getNrCompteEmetteur() + " vers " + virementDto
-                        .getNrCompteBeneficiaire() + " d'un montant de " + virementDto.getMontantVirement()
+        autiService.auditVirement("Virement depuis " + virementDto.getNrCompteEmetteur() + " vers " + virementDto
+                .getNrCompteBeneficiaire() + " d'un montant de "
+                + virementDto.getMontantVirement()
                         .toString());
     }
 
     private void save(Virement Virement) {
-        re2.save(Virement);
+        virementRepository.save(Virement);
     }
 }

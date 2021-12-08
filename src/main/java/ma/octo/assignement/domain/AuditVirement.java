@@ -1,11 +1,24 @@
 package ma.octo.assignement.domain;
 
-import ma.octo.assignement.domain.util.EventType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-import javax.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import ma.octo.assignement.domain.util.EventType;
 
 @Entity
 @Table(name = "AUDIT")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuditVirement {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,28 +29,4 @@ public class AuditVirement {
 
   @Enumerated(EnumType.STRING)
   private EventType eventType;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
-  }
-
-  public EventType getEventType() {
-    return eventType;
-  }
-
-  public void setEventType(EventType eventType) {
-    this.eventType = eventType;
-  }
 }
